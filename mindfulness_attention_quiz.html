@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mindfulness & Attention Control Quiz</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #c94b4b 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 800px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .progress-container {
+            margin-bottom: 30px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #c94b4b 100%);
+            transition: width 0.3s ease;
+            border-radius: 10px;
+        }
+
+        .progress-text {
+            text-align: center;
+            margin-top: 10px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .question-card {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .question-card.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .scale-label {
+            display: inline-block;
+            padding: 4px 12px;
+            background: linear-gradient(135deg, #764ba2, #667eea);
+            color: white;
+            border-radius: 15px;
+            font-size: 0.85em;
+            margin-bottom: 15px;
+        }
+
+        .question-text {
+            font-size: 1.3em;
+            color: #333;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .option {
+            padding: 18px 24px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.05em;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .option:hover {
+            border-color: #764ba2;
+            background: #f8f5ff;
+            transform: translateX(5px);
+        }
+
+        .option.selected {
+            border-color: #c94b4b;
+            background: linear-gradient(135deg, #fff5f5, #ffe5e5);
+            font-weight: 600;
+        }
+
+        .option-radio {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid #764ba2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .option.selected .option-radio {
+            border-color: #c94b4b;
+        }
+
+        .option.selected .option-radio::after {
+            content: '';
+            width: 10px;
+            height: 10px;
+            background: #c94b4b;
+            border-radius: 50%;
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        button {
+            padding: 14px 32px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.05em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .btn-prev {
+            background: #e0e0e0;
+            color: #666;
+        }
+
+        .btn-prev:hover:not(:disabled) {
+            background: #d0d0d0;
+            transform: translateY(-2px);
+        }
+
+        .btn-next {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            flex: 1;
+        }
+
+        .btn-next:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(118, 75, 162, 0.4);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .results {
+            display: none;
+            text-align: center;
+        }
+
+        .results.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .score-card {
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 25px 0;
+        }
+
+        .score-card.maas {
+            background: #764ba2;
+        }
+
+        .score-card.acs {
+            background: #c94b4b;
+        }
+
+        .score-card h2 {
+            font-size: 2em;
+            margin-bottom: 15px;
+        }
+
+        .score-value {
+            font-size: 3em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .score-description {
+            font-size: 1.1em;
+            margin-top: 15px;
+            line-height: 1.6;
+        }
+
+        .restart-btn {
+            background: linear-gradient(135deg, #c94b4b, #764ba2);
+            color: white;
+            margin-top: 20px;
+            padding: 16px 40px;
+            font-size: 1.1em;
+        }
+
+        .restart-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(201, 75, 75, 0.4);
+        }
+
+        .intro {
+            text-align: center;
+        }
+
+        .intro.active {
+            display: block;
+        }
+
+        .intro-text {
+            color: #555;
+            line-height: 1.8;
+            margin: 20px 0;
+            font-size: 1.05em;
+        }
+
+        .start-btn {
+            background: linear-gradient(135deg, #667eea, #c94b4b);
+            color: white;
+            padding: 16px 50px;
+            font-size: 1.2em;
+            margin-top: 30px;
+        }
+
+        .start-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Mindfulness & Attention Quiz</h1>
+        <p class="subtitle">Assess your mindful awareness and attention control</p>
+
+        <div class="intro active" id="intro">
+            <p class="intro-text">
+                This quiz combines items from the Mindful Attention Awareness Scale (MAAS) and the Attention Control Scale (ACS). 
+                It will help you understand your current levels of mindful awareness and ability to control attention.
+            </p>
+            <p class="intro-text">
+                Answer honestly based on your typical experiences. There are no right or wrong answers.
+            </p>
+            <button class="start-btn" onclick="startQuiz()">Begin Quiz</button>
+        </div>
+
+        <div id="quiz-container" style="display: none;">
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress"></div>
+                </div>
+                <div class="progress-text" id="progress-text">Question 1 of 20</div>
+            </div>
+
+            <div id="questions"></div>
+
+            <div class="nav-buttons">
+                <button class="btn-prev" onclick="previousQuestion()" id="prev-btn">Previous</button>
+                <button class="btn-next" onclick="nextQuestion()" id="next-btn" disabled>Next</button>
+            </div>
+        </div>
+
+        <div class="results" id="results"></div>
+    </div>
+
+    <script>
+        const questions = [
+            // MAAS items (reversed scoring)
+            {
+                scale: "MAAS",
+                text: "I find it difficult to stay focused on what's happening in the present.",
+                reversed: true
+            },
+            {
+                scale: "MAAS",
+                text: "I rush through activities without being really attentive to them.",
+                reversed: true
+            },
+            {
+                scale: "MAAS",
+                text: "I find myself doing things without paying attention.",
+                reversed: true
+            },
+            {
+                scale: "MAAS",
+                text: "I snack without being aware that I'm eating.",
+                reversed: true
+            },
+            {
+                scale: "MAAS",
+                text: "I drive places on 'automatic pilot' and then wonder why I went there.",
+                reversed: true
+            },
+            {
+                scale: "MAAS",
+                text: "I find myself preoccupied with the future or the past.",
+                reversed: true
+            },
+            {
+                scale: "MAAS",
+                text: "I forget a person's name almost as soon as I've been told it.",
+                reversed: true
+            },
+            {
+                scale: "MAAS",
+                text: "I do jobs or tasks automatically, without being aware of what I'm doing.",
+                reversed: true
+            },
+            {
+                scale: "MAAS",
+                text: "I find myself listening to someone with one ear, doing something else at the same time.",
+                reversed: true
+            },
+            {
+                scale: "MAAS",
+                text: "I break or spill things because of carelessness, not paying attention, or thinking of something else.",
+                reversed: true
+            },
+            // ACS items
+            {
+                scale: "ACS",
+                text: "It's very hard for me to concentrate on a difficult task when there are noises around.",
+                reversed: false
+            },
+            {
+                scale: "ACS",
+                text: "When I need to concentrate and solve a problem, I have trouble focusing my attention.",
+                reversed: false
+            },
+            {
+                scale: "ACS",
+                text: "I have trouble wrapping up the final details of a project, once the challenging parts have been done.",
+                reversed: false
+            },
+            {
+                scale: "ACS",
+                text: "My concentration is good even if there is music in the room around me.",
+                reversed: true
+            },
+            {
+                scale: "ACS",
+                text: "When concentrating, I can focus my attention so that I become unaware of what's going on in the room around me.",
+                reversed: true
+            },
+            {
+                scale: "ACS",
+                text: "It is easy for me to read or write while I'm also talking on the phone.",
+                reversed: true
+            },
+            {
+                scale: "ACS",
+                text: "I can quickly switch from one task to another.",
+                reversed: true
+            },
+            {
+                scale: "ACS",
+                text: "It takes me a while to get really involved in a new task.",
+                reversed: false
+            },
+            {
+                scale: "ACS",
+                text: "I have a hard time coming up with new ideas quickly.",
+                reversed: false
+            },
+            {
+                scale: "ACS",
+                text: "After being interrupted or distracted, I can easily shift my attention back to what I was doing before.",
+                reversed: true
+            }
+        ];
+
+        const options = [
+            { text: "Almost Always", value: 1 },
+            { text: "Very Frequently", value: 2 },
+            { text: "Somewhat Frequently", value: 3 },
+            { text: "Somewhat Infrequently", value: 4 },
+            { text: "Very Infrequently", value: 5 },
+            { text: "Almost Never", value: 6 }
+        ];
+
+        let currentQuestion = 0;
+        let answers = {};
+
+        function startQuiz() {
+            document.getElementById('intro').style.display = 'none';
+            document.getElementById('quiz-container').style.display = 'block';
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            const container = document.getElementById('questions');
+            const question = questions[currentQuestion];
+            
+            container.innerHTML = `
+                <div class="question-card active">
+                    <span class="scale-label">${question.scale}</span>
+                    <div class="question-text">${question.text}</div>
+                    <div class="options">
+                        ${options.map((opt, idx) => `
+                            <div class="option" onclick="selectOption(${opt.value})" data-value="${opt.value}">
+                                <div class="option-radio"></div>
+                                <span>${opt.text}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+
+            if (answers[currentQuestion] !== undefined) {
+                const selected = container.querySelector(`[data-value="${answers[currentQuestion]}"]`);
+                if (selected) selected.classList.add('selected');
+                document.getElementById('next-btn').disabled = false;
+            }
+
+            updateProgress();
+            updateButtons();
+        }
+
+        function selectOption(value) {
+            answers[currentQuestion] = value;
+            
+            document.querySelectorAll('.option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            
+            event.currentTarget.classList.add('selected');
+            document.getElementById('next-btn').disabled = false;
+        }
+
+        function updateProgress() {
+            const progress = ((currentQuestion + 1) / questions.length) * 100;
+            document.getElementById('progress').style.width = progress + '%';
+            document.getElementById('progress-text').textContent = 
+                `Question ${currentQuestion + 1} of ${questions.length}`;
+        }
+
+        function updateButtons() {
+            document.getElementById('prev-btn').disabled = currentQuestion === 0;
+            
+            const nextBtn = document.getElementById('next-btn');
+            if (currentQuestion === questions.length - 1) {
+                nextBtn.textContent = 'View Results';
+            } else {
+                nextBtn.textContent = 'Next';
+            }
+        }
+
+        function nextQuestion() {
+            if (currentQuestion < questions.length - 1) {
+                currentQuestion++;
+                document.getElementById('next-btn').disabled = true;
+                renderQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function previousQuestion() {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                renderQuestion();
+            }
+        }
+
+        function calculateScores() {
+            let maasScore = 0;
+            let maasCount = 0;
+            let acsScore = 0;
+            let acsCount = 0;
+
+            questions.forEach((q, idx) => {
+                const answer = answers[idx];
+                if (answer === undefined) return;
+
+                let score = answer;
+                if (q.reversed) {
+                    score = 7 - answer; // Reverse scoring
+                }
+
+                if (q.scale === 'MAAS') {
+                    maasScore += score;
+                    maasCount++;
+                } else {
+                    acsScore += score;
+                    acsCount++;
+                }
+            });
+
+            return {
+                maas: maasCount > 0 ? (maasScore / maasCount).toFixed(2) : 0,
+                acs: acsCount > 0 ? (acsScore / acsCount).toFixed(2) : 0
+            };
+        }
+
+        function getInterpretation(score, scale) {
+            if (scale === 'MAAS') {
+                if (score >= 5) return "High mindful awareness - You tend to be very present and aware in your daily life.";
+                if (score >= 4) return "Moderate-high mindful awareness - You generally maintain good awareness of the present moment.";
+                if (score >= 3) return "Moderate mindful awareness - Your present-moment awareness varies across situations.";
+                return "Lower mindful awareness - You may benefit from practices to increase present-moment attention.";
+            } else {
+                if (score >= 5) return "Strong attention control - You excel at focusing and managing your attention effectively.";
+                if (score >= 4) return "Good attention control - You generally manage your attention well in most situations.";
+                if (score >= 3) return "Moderate attention control - Your ability to control attention varies depending on the task.";
+                return "Attention control challenges - You may find it helpful to develop strategies for managing distractions.";
+            }
+        }
+
+        function showResults() {
+            document.getElementById('quiz-container').style.display = 'none';
+            const scores = calculateScores();
+            
+            const resultsHtml = `
+                <h2 style="color: #333; margin-bottom: 20px;">Your Results</h2>
+                
+                <div class="score-card">
+                    <h2>Mindful Awareness (MAAS)</h2>
+                    <div class="score-value">${scores.maas}</div>
+                    <p style="font-size: 1em; opacity: 0.9;">out of 6.00</p>
+                    <div class="score-description">${getInterpretation(parseFloat(scores.maas), 'MAAS')}</div>
+                </div>
+
+                <div class="score-card">
+                    <h2>Attention Control (ACS)</h2>
+                    <div class="score-value">${scores.acs}</div>
+                    <p style="font-size: 1em; opacity: 0.9;">out of 6.00</p>
+                    <div class="score-description">${getInterpretation(parseFloat(scores.acs), 'ACS')}</div>
+                </div>
+
+                <p style="color: #666; margin-top: 20px; line-height: 1.6;">
+                    Higher scores indicate better mindful awareness and attention control. 
+                    These scores reflect your self-reported tendencies and can help guide personal development.
+                </p>
+
+                <button class="restart-btn" onclick="restartQuiz()">Take Quiz Again</button>
+            `;
+
+            document.getElementById('results').innerHTML = resultsHtml;
+            document.getElementById('results').classList.add('active');
+        }
+
+        function restartQuiz() {
+            currentQuestion = 0;
+            answers = {};
+            document.getElementById('results').classList.remove('active');
+            document.getElementById('intro').style.display = 'block';
+            document.getElementById('intro').classList.add('active');
+        }
+    </script>
+</body>
+</html>
